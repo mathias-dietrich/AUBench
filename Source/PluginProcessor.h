@@ -56,6 +56,11 @@ public:
     //==============================================================================
     void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
+    
+    double phaseOsc0;
+    double freqOsc0 = 2.5;
+    double deltaTime = 0;
+    double abstime = 0;
 
 private:
     //==============================================================================

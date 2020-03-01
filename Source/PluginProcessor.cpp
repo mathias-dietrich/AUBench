@@ -97,6 +97,9 @@ void FlipPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
+    
+    phaseOsc0 = 0.0;
+    deltaTime = 1.0 /sampleRate;
 }
 
 void FlipPluginAudioProcessor::releaseResources()
@@ -150,12 +153,26 @@ void FlipPluginAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuf
     // the samples and the outer loop is handling the channels.
     // Alternatively, you can process the samples with the channels
     // interleaved by keeping the same state.
+    
+    
+    if (abstime >= std::numeric_limits<float>::max()) {
+            abstime = 0.0;
+        }
+    
+    // Osc 0 >LFO sin wave
+    float *monoBuffer = new float[buffer.getNumSamples()];
+    for (int sample = 0; sample < buffer.getNumSamples(); ++sample) {
+        float value = sin(2 * double_Pi * freqOsc0 * abstime );
+        monoBuffer[sample] = value;
+        abstime += deltaTime;
+    }
+    
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
         auto* channelData = buffer.getWritePointer (channel);
 
-        for (auto sample = 0; sample < buffer.getNumSamples(); ++sample){
-            auto t = channelData[sample]  * levelScale * 16.0;
+        for (auto sampleId = 0; sampleId < buffer.getNumSamples(); ++sampleId){
+            auto t = channelData[sampleId]  * levelScale * 16.0 * monoBuffer[sampleId] ;
             
             // brick wall
             if(t > 1.0){
@@ -165,7 +182,7 @@ void FlipPluginAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuf
             if(t < -1.0){
                 t = -1.0;
             }
-            channelData[sample] = t;
+            channelData[sampleId] = t;
         }
     }
 }
