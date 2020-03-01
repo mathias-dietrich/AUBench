@@ -172,7 +172,16 @@ void FlipPluginAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuf
         auto* channelData = buffer.getWritePointer (channel);
 
         for (auto sampleId = 0; sampleId < buffer.getNumSamples(); ++sampleId){
-            auto t = channelData[sampleId]  * levelScale * 16.0 * monoBuffer[sampleId] ;
+            auto t = channelData[sampleId]  * levelScale * 16.0 ;
+            
+            t = t * comp;
+            double m = t;
+            if (m < 0){
+                m = -m;
+            }
+            SumLevel = (SumLevel * 4.0 + m) / 5.0;
+            
+            t = t * monoBuffer[sampleId] ;
             
             // brick wall
             if(t > 1.0){
@@ -182,7 +191,23 @@ void FlipPluginAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuf
             if(t < -1.0){
                 t = -1.0;
             }
-            channelData[sampleId] = t;
+            
+            channelData[sampleId] = t * 0.7;
+            
+            if(SumLevel > 0.5){
+                comp = comp - 0.001;
+            }else{
+                 comp = comp + 0.001;
+            }
+            
+            if(comp > 1.0)
+             {
+                    comp = 1.0;
+             }
+            if(comp <0)
+            {
+                   comp = 0;
+            }
         }
     }
 }

@@ -61,6 +61,9 @@ public:
     double freqOsc0 = 2.5;
     double deltaTime = 0;
     double abstime = 0;
+    double comp = 0.5;
+    double SumLevel = 0.0;
+    
 
 private:
     //==============================================================================
